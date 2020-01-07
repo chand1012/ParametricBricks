@@ -8,8 +8,8 @@ if "linux" in sys.platform:
 
 for file in os.listdir("."):
     if file.endswith(".jscad"):
-        with f as open(file):
-            first_line = f.readline().strip()
+        with open(file) as thing:
+            first_line = thing.readline().strip()
             if "ignore" in first_line:
                 continue
         print("Building ", file)
