@@ -56,17 +56,22 @@ function generate_walls(l, w) {
     return shell;
 }
 
-function generate_cylinders(l, w) {
+// function calculate_cylinders(l, w) {
+//     let stud_positions = calculate_studs(l, w);
+
+// }
+
+// function generate_cylinders(l, w, big, small) {
     
-}
+// }
 
 // main function
 
 function main() {
     // reused objects
     let stud = cylinder({
-       r: stud_radius,
-       h: stud_height,
+        r: stud_radius,
+        h: stud_height,
         center: true
     });
     let big_cylinder = difference(cylinder({
