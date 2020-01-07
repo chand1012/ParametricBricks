@@ -7,7 +7,7 @@ for file in os.listdir("."):
     if file.endswith(".scad"):
         print("Building ", file)
         outputname = file.replace(".scad", ".stl")
-        scad_compile = os.system(f"openscad {file} --output {outputname}")
+        scad_compile = os.system(f"openscad --headless {file} --output {outputname}")
         if scad_compile != 0:
             print(f"Build failed on file {file}!")
             sys.exit(1)
