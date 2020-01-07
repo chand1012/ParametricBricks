@@ -1,10 +1,15 @@
 // ignore
+
+//parameters
+const l = 2;
+const w = 4;
+
 // unit constants
 const units = 1.6; // mm
 const stud_distance = 8; // mm
 const stud_height = units; // mm
-const stud_radius = 1.5*units; // mm
-const brick_height = units * 6;
+const stud_radius = 1.5 * units; // mm
+const brick_height = 6 * units;
 // accounts for corners
 const tolerance = units; //mm 
 
@@ -15,7 +20,7 @@ function calculate_studs(l, w) {
     let i, j;
     for (i = 0; i < l; i++) {
         for (j = 0; j < w; j++) {
-            returnVectors.push([(i * stud_distance) - (brick_length/2) + (stud_radius*units), (j * stud_distance) + (stud_radius*units), units*3.5]);
+            returnVectors.push([(i * stud_distance) - (brick_length/2) + (2.5*units), (j * stud_distance) + (2*units), units*3.5]);
         }
     }
     return returnVectors;
@@ -35,11 +40,11 @@ function generate_walls(l, w) {
     let brick_length = l * stud_distance;
     let brick_width = w * stud_distance;
     let l_wall = cube({
-        size: [brick_length + tolerance, units, brick_height],
+        size: [brick_length, units, brick_height],
         center: true
     });
     let w_wall = cube({
-        size: [units, brick_width + tolerance, brick_height],
+        size: [units, brick_width, brick_height],
         center: true
     });
     let t_wall = cube({
@@ -48,12 +53,11 @@ function generate_walls(l, w) {
     });
     let sides = []; // will be 5 translated cubes
     sides.push(l_wall);
-    sides.push(translate([0, brick_width, 0], l_wall));
-    sides.push(translate([brick_length/2, brick_width/2, 0], w_wall));
-    sides.push(translate([-brick_length/2, brick_width/2, 0], w_wall));
-    sides.push(translate([0, brick_width/2, brick_height/2 - (units/2)], t_wall));
-    let shell = union(sides);
-    return shell;
+    sides.push(translate([0, brick_width-units, 0], l_wall));
+    sides.push(translate([brick_length/2 - units/2, brick_width/2 - (units/2), 0], w_wall));
+    sides.push(translate([-brick_length/2 + units/2, brick_width/2 - (units/2), 0], w_wall));
+    sides.push(translate([0, brick_width/2 - (units/2), brick_height/2 - (units/2)], t_wall));
+    return union(sides);
 }
 
 // function calculate_cylinders(l, w) {
@@ -88,7 +92,7 @@ function main() {
         h: 8 * units,
         center: true
     });
-    let shell = generate_walls(2, 4);
-    let studs = generate_studs(2, 4, stud);
+    let shell = generate_walls(Math.floor(l), Math.floor(w));
+    let studs = generate_studs(Math.floor(l), Math.floor(w), stud);
     return union(shell, studs);
 }
