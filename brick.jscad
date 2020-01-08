@@ -1,5 +1,3 @@
-// ignore
-
 //parameters
 const l = 2;
 const w = 4;
