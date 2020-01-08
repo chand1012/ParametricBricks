@@ -4,7 +4,7 @@ import os, sys
 count = 0
 command = "openjscad"
 if "linux" in sys.platform:
-    command = "/usr/local/lib/nodejs/bin/openjscad"
+    command = "time /usr/local/lib/nodejs/bin/openjscad"
 
 for file in os.listdir("."):
     if file.endswith(".jscad"):
