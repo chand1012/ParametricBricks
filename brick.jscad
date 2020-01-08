@@ -1,3 +1,5 @@
+// To do: add command line parameters
+
 //parameters
 const l = 2;
 const w = 4;
@@ -17,7 +19,22 @@ function pythagoras(c1, c2) {
 }
 
 function distance(vect1, vect2) {
-    return Math.sqrt(Math.pow((vect2[0]-vect1[0]), 2), Math.pow((vect2[1]-vect1[1]), 2), Math.pow((vect2[2]-vect1[2]), 2))
+    return Math.sqrt(Math.pow((vect2[0]-vect1[0]), 2), Math.pow((vect2[1]-vect1[1]), 2), Math.pow((vect2[2]-vect1[2]), 2));
+}
+
+function addVectors(vect1, vect2) {
+    let returnVect = [];
+    let i;
+    let vl;
+    if (vect1.length >= vect2.length) {
+        vl = vect1.length;
+    } else {
+        vl = vect2.length;
+    }
+    for (i=0; i<vl; i++) {
+        returnVect[i] = vect1[i] + vect2[i];
+    }
+    return returnVect;
 }
 
 function arrayMatch(array1, array2) {
@@ -37,10 +54,10 @@ function arrayOfArraysContains(array, testarray) {
     let i;
     for (i = 0; i < array.length; i++) {
         if (arrayMatch(array[i], testarray)) {
-            return true
+            return true;
         }
     }
-    return false
+    return false;
 }
 
 function centerOfVectors(arrayOfVectors) {
@@ -74,7 +91,7 @@ function generate_studs(l, w, stud) {
     let i;
     let returnObjects = [];
     for (i = 0; i < returnVectors.length; i++) {
-        returnObjects.push(translate(returnVectors[i], stud))
+        returnObjects.push(translate(returnVectors[i], stud));
     }
     return returnObjects;
 }
@@ -105,28 +122,37 @@ function generate_walls(l, w) {
 
 function calculate_cylinders(l, w) {
     let stud_locations = calculate_studs(l, w).sort();
-    let cylinder_locations = new Array;
-    let group = new Array;
-    let groups = new Array;
+    let cylinder_locations = [];
+    let groups = [];
+    let group = [];
     let i, j;
-    let ws1 = [0, 0, 0];
-    let ws2 = [0, 0, 0];
-    for (i = 0; i < stud_locations.length; i += 2) {
-        j = i + 1;
-        ws1 = [stud_locations[i][0] + 8, stud_locations[i][1], stud_locations[i][2]];
-        ws2 = [stud_locations[j][0] + 8, stud_locations[j][1], stud_locations[j][2]];
-        if (arrayOfArraysContains(stud_locations, ws1) && arrayOfArraysContains(stud_locations, ws2)) {
-            group.push([stud_locations[i][0], stud_locations[i][1], 0]);
-            group.push([stud_locations[j][0], stud_locations[j][1], 0]);
-            group.push([ws1[0], ws1[1], 0]);
-            group.push([ws2[0], ws2[1], 0]);    
-            groups.push(group);
-            group = new Array;
+    let center;
+    let stud_one;
+    let stud_two;
+    let test_vectors = [[0, 8, 0], [-8, 0, 0], [-8, 8, 0]];
+    for (i=0; i<stud_locations.length; i++) {
+        stud_one = stud_locations[i];
+        group.push(stud_one);
+        for (j=0; j<test_vectors.length; j++) {
+            stud_two = addVectors(test_vectors[j], stud_one);
+            if (arrayOfArraysContains(stud_locations, stud_two)) {
+                group.push(stud_two);
+            }
+        }
+        groups.push(group);
+        group = [];
+    }
+
+    for(i=0; i<groups.length; i++) {
+        group = groups[i];
+        if (group.length==4) {
+            center = centerOfVectors(group);
+            if (!arrayOfArraysContains(cylinder_locations, center)) {
+                cylinder_locations.push(center);
+            }
         }
     }
-    for (i = 0; i < groups.length; i++) {
-        cylinder_locations.push(centerOfVectors(groups[i]));
-    }
+
     return cylinder_locations;
 }
 
@@ -134,8 +160,10 @@ function generate_cylinders(l, w, big) {
     let cylinder_locations = calculate_cylinders(l, w);
     let cylinders = [];
     let i;
+    let location;
     for (i=0;i<cylinder_locations.length;i++) {
-        cylinders.push(translate(cylinder_locations[i], big));
+        location = cylinder_locations[i];
+        cylinders.push(translate([location[0], location[1], 0], big));
     }
     return union(cylinders);
 }
@@ -150,21 +178,25 @@ function main() {
         center: true
     });
     let big_cylinder = difference(cylinder({
-        r: 3.2,
-        h: 8 * units,
+        r: units * 2,
+        h: 6 * units,
         center: true
     }), cylinder({
-        r: 2.4,
-        h: 8 * units,
+        r: 1.5 * units,
+        h: 6 * units,
         center: true
     }));
     let small_cylinder = cylinder({
         r: units,
-        h: 8 * units,
+        h: 6 * units,
         center: true
     });
+    console.log("Generating shell...");
     let shell = generate_walls(Math.floor(l), Math.floor(w));
+    console.log("Generating Studs...");
     let studs = generate_studs(Math.floor(l), Math.floor(w), stud);
+    console.log("Generating Cylinders...");
     let cylinders = generate_cylinders(Math.floor(l), Math.floor(w), big_cylinder);
+    console.log("Done!")
     return union(union(shell, cylinders), studs);
 }
