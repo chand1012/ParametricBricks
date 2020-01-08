@@ -14,6 +14,51 @@ const brick_height = 6 * units;
 const tolerance = units; //mm 
 
 // functions
+function pythagoras(c1, c2) {
+    return Math.sqrt(Math.pow(c1, 2) + Math.pow(c2, 2));
+}
+
+function distance(vect1, vect2) {
+    return Math.sqrt(Math.pow((vect2[0]-vect1[0]), 2), Math.pow((vect2[1]-vect1[1]), 2), Math.pow((vect2[2]-vect1[2]), 2))
+}
+
+function arrayMatch(array1, array2) {
+    if (array1.length !== array2.length) {
+        return false;
+    }
+    let i;
+    for (i = 0; i < array1.length; i++) {
+        if (array1[i] !== array2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function arrayOfArraysContains(array, testarray) {
+    let i;
+    for (i = 0; i < array.length; i++) {
+        if (arrayMatch(array[i], testarray)) {
+            return true
+        }
+    }
+    return false
+}
+
+function centerOfVectors(arrayOfVectors) {
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    let i;
+    let c = arrayOfVectors.length;
+    for (i = 0; i < c; i++) {
+        x += arrayOfVectors[i][0];
+        y += arrayOfVectors[i][1];
+        z += arrayOfVectors[i][2];
+    }
+    return [x / c, y / c, z / c];
+}
+
 function calculate_studs(l, w) {
     let brick_length = l * stud_distance;
     let returnVectors = [];
@@ -60,14 +105,42 @@ function generate_walls(l, w) {
     return union(sides);
 }
 
-// function calculate_cylinders(l, w) {
-//     let stud_positions = calculate_studs(l, w);
+function calculate_cylinders(l, w) {
+    let stud_locations = calculate_studs(l, w).sort();
+    let cylinder_locations = new Array;
+    let group = new Array;
+    let groups = new Array;
+    let i, j;
+    let ws1 = [0, 0, 0];
+    let ws2 = [0, 0, 0];
+    for (i = 0; i < stud_locations.length; i += 2) {
+        j = i + 1;
+        ws1 = [stud_locations[i][0] + 8, stud_locations[i][1], stud_locations[i][2]];
+        ws2 = [stud_locations[j][0] + 8, stud_locations[j][1], stud_locations[j][2]];
+        if (arrayOfArraysContains(stud_locations, ws1) && arrayOfArraysContains(stud_locations, ws2)) {
+            group.push([stud_locations[i][0], stud_locations[i][1], 0]);
+            group.push([stud_locations[j][0], stud_locations[j][1], 0]);
+            group.push([ws1[0], ws1[1], 0]);
+            group.push([ws2[0], ws2[1], 0]);    
+            groups.push(group);
+            group = new Array;
+        }
+    }
+    for (i = 0; i < groups.length; i++) {
+        cylinder_locations.push(centerOfVectors(groups[i]));
+    }
+    return cylinder_locations;
+}
 
-// }
-
-// function generate_cylinders(l, w, big, small) {
-    
-// }
+function generate_cylinders(l, w, big) {
+    let cylinder_locations = calculate_cylinders(l, w);
+    let cylinders = [];
+    let i;
+    for (i=0;i<cylinder_locations.length;i++) {
+        cylinders.push(translate(cylinder_locations[i], big));
+    }
+    return union(cylinders);
+}
 
 // main function
 
@@ -94,5 +167,6 @@ function main() {
     });
     let shell = generate_walls(Math.floor(l), Math.floor(w));
     let studs = generate_studs(Math.floor(l), Math.floor(w), stud);
-    return union(shell, studs);
+    let cylinders = generate_cylinders(Math.floor(l), Math.floor(w), big_cylinder);
+    return union(union(shell, cylinders), studs);
 }
