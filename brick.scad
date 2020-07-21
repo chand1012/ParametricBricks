@@ -1,3 +1,5 @@
+$fn = 50;
+
 l = 2;
 w = 4;
 
@@ -23,14 +25,18 @@ module generate_walls(l, w) {
 }
 
 module studs(l, w) {
-    brick_length = l * stud_distance
+    brick_length = l * stud_distance;
     vectors = [
-        
+        for (i = [0:l-1]) for (j = [0:w-1]) [(i * stud_distance) - (brick_length/2) + (2.5*units), (j * stud_distance) + (2*units), units*3.5],
     ];
+    //echo(vectors);
     for (stud_location = vectors) {
         translate (stud_location) cylinder(h=stud_height, r=stud_radius, center=true);
     }
 }
 
-generate_walls(l, w);
-studs(l, w);
+union() {
+    generate_walls(l, w);
+    studs(l, w);
+    // just need cylinder generation
+}
